@@ -1,98 +1,119 @@
 /**
  * @author Jose David Molano Perdomo
- *
- * POLIMORFISMO — Clase que USA el array Asignatura[]
- *
- * El punto clave: los atributos notaDesarrollo y notaMatematica
- * desaparecen. En su lugar hay un array de tipo PADRE: Asignatura[].
- *
- * Cuando el código recorre ese array y llama a un método (calcularPonderacion,
- * getDescripcion, esIncrementable...), Java decide EN TIEMPO DE EJECUCIÓN
- * cuál implementación usar según el objeto real guardado en cada posición.
- * Eso es el "dispatch dinámico" o polimorfismo de subtipo.
  */
-package modelo;
+
+package modelo;  // Pertenece a la capa Modelo (datos)
 
 public class Estudiante {
-
+    
     // ============= ATRIBUTOS =============
-    private int codigo;
-    private String nombre;
-
-    /**
-     * ARRAY POLIMÓRFICO: el tipo declarado es Asignatura (padre),
-     * pero los objetos reales son AsignaturaDesarrollo y AsignaturaMatematica.
-     * índice 0 → Desarrollo, índice 1 → Matemática
-     */
-    private Asignatura[] asignaturas;
-
+    private int codigo;              // Código único del estudiante (mayor a 21000)
+    private String nombre;           // Nombre completo del estudiante
+    private double notaDesarrollo;   // Nota de la asignatura Desarrollo (0.0 a 5.0)
+    private double notaMatematica;   // Nota de la asignatura Matemática (0.0 a 5.0)
+    
     // ============= CONSTRUCTOR =============
     public Estudiante(int codigo, String nombre, double notaDesarrollo, double notaMatematica) {
         this.codigo = codigo;
         this.nombre = nombre;
-
-        // Crea los objetos concretos y los guarda como tipo padre
-        this.asignaturas = new Asignatura[] {
-            new AsignaturaDesarrollo(notaDesarrollo),   // posición 0
-            new AsignaturaMatematica(notaMatematica)    // posición 1
-        };
+        this.notaDesarrollo = notaDesarrollo;
+        this.notaMatematica = notaMatematica;
     }
-
-    // ============= MÉTODOS DE CÁLCULO (ahora POLIMÓRFICOS) =============
-
-    /**
-     * POLIMORFISMO EN ACCIÓN:
-     * El bucle no sabe si cada elemento es Desarrollo o Matemática.
-     * Simplemente llama a calcularPonderacion() y Java hace lo correcto.
-     * Si mañana agrego una tercera asignatura, este método NO CAMBIA.
-     */
+    
+    // ============= MÉTODOS DE CÁLCULO =============
+    
     public double calcularDefinitiva() {
-        double total = 0;
-        for (Asignatura a : asignaturas) {
-            total += a.calcularPonderacion();  // ← llamada polimórfica
-        }
-        return total;
+        return (notaDesarrollo * 0.55) + (notaMatematica * 0.45);
     }
-
-    /**
-     * POLIMORFISMO EN ACCIÓN:
-     * Recorre el array e intenta incrementar cada asignatura.
-     * Solo AsignaturaDesarrollo responderá (esIncrementable() = true).
-     * AsignaturaMatematica ignorará el incremento (esIncrementable() = false).
-     * El controlador NO necesita saber cuál es cuál.
-     */
-    public void incrementarNotasIncrementables(double incremento) {
-        for (Asignatura a : asignaturas) {
-            a.incrementarNota(incremento);  // ← polimórfico: cada subclase decide
-        }
-    }
-
-    /**
-     * Devuelve aprobación según la nota definitiva.
-     */
+    
     public String verificarAprobacion() {
-        return (calcularDefinitiva() >= 3.5) ? "SI APRUEBA" : "NO APRUEBA";
+        double definitiva = calcularDefinitiva();
+        if (definitiva < 3.5) {
+            return "NO APRUEBA";
+        } else {
+            return "SI APRUEBA";
+        }
     }
-
-    // ============= GETTERS DE NOTAS (delegan en el array) =============
-
-    public double getNotaDesarrollo() { return asignaturas[0].getNota(); }
-    public double getNotaMatematica() { return asignaturas[1].getNota(); }
-
+    
+    // ============= MÉTODOS POLIMÓRFICOS =============
+    
     /**
-     * Expone el array completo para que el controlador/vista puedan
-     * recorrerlo sin conocer los tipos concretos.
-     * Útil para mostrar dinámica mente las asignaturas disponibles.
+     * MÉTODO POLIMÓRFICO 1: Calcula diferentes operaciones según el tipo
+     * @param tipoOperacion 1=Nota Máxima, 2=Nota Mínima, 3=Diferencia
+     * @return resultado de la operación
      */
-    public Asignatura[] getAsignaturas() { return asignaturas; }
-
+    public double calcularOperacionPolimorfica(int tipoOperacion) {
+        switch(tipoOperacion) {
+            case 1: // Nota máxima
+                return Math.max(notaDesarrollo, notaMatematica);
+            case 2: // Nota mínima
+                return Math.min(notaDesarrollo, notaMatematica);
+            case 3: // Diferencia
+                return Math.abs(notaDesarrollo - notaMatematica);
+            default:
+                return 0;
+        }
+    }
+    
+    /**
+     * MÉTODO POLIMÓRFICO 2: Sobrecarga - mismo nombre, diferentes parámetros
+     * Calcula la nota con diferente ponderación
+     */
+    public double calcularDefinitiva(double ponderacionDesarrollo, double ponderacionMatematica) {
+        return (notaDesarrollo * ponderacionDesarrollo) + (notaMatematica * ponderacionMatematica);
+    }
+    
+    /**
+     * MÉTODO POLIMÓRFICO 3: Sobrecarga - calcula definitiva con criterio diferente
+     */
+    public double calcularDefinitiva(boolean usarPromedioSimple) {
+        if (usarPromedioSimple) {
+            return (notaDesarrollo + notaMatematica) / 2;
+        } else {
+            return calcularDefinitiva(); // Usa la ponderación original
+        }
+    }
+    
+    // ============= MÉTODOS PARA INCREMENTAR NOTAS =============
+    
+    public void incrementarNotaDesarrollo(double incremento) {
+        double nuevaNota = this.notaDesarrollo + incremento;
+        if (nuevaNota > 5.0) {
+            this.notaDesarrollo = 5.0;
+        } else {
+            this.notaDesarrollo = nuevaNota;
+        }
+    }
+    
     // ============= MÉTODOS PARA MODIFICAR NOTAS =============
-
-    public void modificarNotaDesarrollo(double nuevaNota) { asignaturas[0].setNota(nuevaNota); }
-    public void modificarNotaMatematica(double nuevaNota) { asignaturas[1].setNota(nuevaNota); }
-
-    // ============= GETTERS BÁSICOS =============
-
-    public int    getCodigo() { return codigo; }
-    public String getNombre() { return nombre; }
+    
+    public void modificarNotaDesarrollo(double nuevaNota) {
+        if (nuevaNota >= 0.0 && nuevaNota <= 5.0) {
+            this.notaDesarrollo = nuevaNota;
+        }
+    }
+    
+    public void modificarNotaMatematica(double nuevaNota) {
+        if (nuevaNota >= 0.0 && nuevaNota <= 5.0) {
+            this.notaMatematica = nuevaNota;
+        }
+    }
+    
+    // ============= GETTERS =============
+    
+    public int getCodigo() {
+        return codigo;
+    }
+    
+    public String getNombre() {
+        return nombre;
+    }
+    
+    public double getNotaDesarrollo() {
+        return notaDesarrollo;
+    }
+    
+    public double getNotaMatematica() {
+        return notaMatematica;
+    }
 }
