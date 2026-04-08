@@ -2,153 +2,169 @@
  * @author Jose David Molano Perdomo
  */
 
-package modelo;  // Pertenece a la capa Modelo (datos)
+package modelo;
 
-import java.util.ArrayList;  // Importa la clase ArrayList para manejar listas dinámicas
+import java.util.ArrayList;
 
 public class ModeloEstudiantes {
     
-    // ============= ATRIBUTO =============
-    private ArrayList<Estudiante> estudiantes;  // Lista dinámica que almacena TODOS los estudiantes
+    private ArrayList<Estudiante> estudiantes;
     
-    // ============= CONSTRUCTOR =============
-    /**
-     * Constructor - Inicializa la lista de estudiantes vacía
-     * Se ejecuta al crear un nuevo objeto ModeloEstudiantes
-     */
     public ModeloEstudiantes() {
-        // Crea una nueva ArrayList vacía para guardar estudiantes
         this.estudiantes = new ArrayList<>();
     }
     
-    // ============= MÉTODOS BÁSICOS DE GESTIÓN =============
-    
-    /**
-     * Agrega un nuevo estudiante a la colección
-     * @param estudiante El objeto Estudiante a agregar
-     */
     public void agregarEstudiante(Estudiante estudiante) {
-        estudiantes.add(estudiante);  // Añade el estudiante al final de la lista
+        estudiantes.add(estudiante);
     }
     
-    /**
-     * Obtiene la lista completa de estudiantes
-     * @return ArrayList con todos los estudiantes registrados
-     */
     public ArrayList<Estudiante> getEstudiantes() {
-        return estudiantes;  // Devuelve la lista completa
+        return estudiantes;
     }
     
-    /**
-     * Busca un estudiante por su código único
-     * @param codigo El código del estudiante a buscar
-     * @return El objeto Estudiante si lo encuentra, null si no existe
-     */
     public Estudiante getEstudiantePorCodigo(int codigo) {
-        // Recorre TODA la lista de estudiantes (NAVEGACIÓN)
         for (Estudiante e : estudiantes) {
-            // Compara el código de cada estudiante con el buscado
             if (e.getCodigo() == codigo) {
-                return e;  // Si lo encuentra, lo devuelve inmediatamente
+                return e;
             }
         }
-        return null;  // Si termina el ciclo y no lo encuentra, retorna null
+        return null;
     }
     
-    // ============= MÉTODO DE ORDENAMIENTO =============
-    
-    /**
-     * Ordena los estudiantes por nota definitiva de forma ASCENDENTE (menor a mayor)
-     * Implementa el algoritmo de BURBUJA (sin usar librerías de ordenamiento)
-     */
     public void ordenarPorNotaDefinitiva() {
-        int n = estudiantes.size();  // Obtiene la cantidad de estudiantes
-        
-        // Algoritmo de burbuja: compara pares adyacentes y los intercambia si están desordenados
-        for (int i = 0; i < n - 1; i++) {           // Controla el número de pasadas
-            for (int j = 0; j < n - i - 1; j++) {   // Compara elementos adyacentes
-                
-                // Obtiene las notas definitivas de los dos estudiantes a comparar
+        int n = estudiantes.size();
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
                 double nota1 = estudiantes.get(j).calcularDefinitiva();
                 double nota2 = estudiantes.get(j + 1).calcularDefinitiva();
-                
-                // Si están en orden descendente (nota1 mayor que nota2) los intercambia
                 if (nota1 > nota2) {
-                    // INTERCAMBIO: Guarda temporalmente, reemplaza, y coloca el temporal
-                    Estudiante temp = estudiantes.get(j);           // Guarda el primero
-                    estudiantes.set(j, estudiantes.get(j + 1));     // Pone el segundo en la posición del primero
-                    estudiantes.set(j + 1, temp);                   // Pone el primero (guardado) en la posición del segundo
+                    Estudiante temp = estudiantes.get(j);
+                    estudiantes.set(j, estudiantes.get(j + 1));
+                    estudiantes.set(j + 1, temp);
                 }
             }
         }
-        // Al finalizar, la lista queda ordenada de menor a mayor nota definitiva
     }
     
-    // ============= MÉTODO DE APROBACIÓN =============
-    
-    /**
-     * Determina si una nota implica aprobación o no
-     * @param nota La nota a evaluar
-     * @return "SI APRUEBA" si nota >= 3.5, "NO APRUEBA" si nota < 3.5
-     */
     public String calcularAprobacion(double nota) {
-        // Toma una decisión basada en la nota
         if (nota < 3.5) {
-            return "NO APRUEBA";  // Menor a 3.5 = No aprueba
+            return "NO APRUEBA";
         } else {
-            return "SI APRUEBA";  // Mayor o igual a 3.5 = Sí aprueba
+            return "SI APRUEBA";
         }
     }
     
-    // ============= MÉTODO ESPECIAL CON NAVEGACIÓN Y DECISIONES =============
-    
-    /**
-     * MÉTODO QUE CUMPLE CON EL REQUISITO DE NAVEGACIÓN Y DECISIONES
-     * 
-     * 1. NAVEGA: Recorre TODOS los estudiantes de la lista
-     * 2. DECIDE: Compara los promedios y muestra un mensaje según cuál sea mayor
-     * 
-     * @return Arreglo con [promedioDesarrollo, promedioMatematica]
-     */
     public double[] navegarYCalcularPromedioAsignaturas() {
-        double sumaDesarrollo = 0;      // Acumulador para notas de Desarrollo
-        double sumaMatematica = 0;      // Acumulador para notas de Matemática
-        int contador = 0;               // Contador de estudiantes
+        double sumaDesarrollo = 0;
+        double sumaMatematica = 0;
+        int contador = 0;
         
-        // ===== PARTE 1: NAVEGACIÓN =====
-        // Recorre UNO POR UNO todos los estudiantes en la lista
         for (Estudiante e : estudiantes) {
-            // Por cada estudiante, suma sus notas a los acumuladores
-            sumaDesarrollo += e.getNotaDesarrollo();    // Acumula nota de Desarrollo
-            sumaMatematica += e.getNotaMatematica();    // Acumula nota de Matemática
-            contador++;                                 // Incrementa el contador
+            sumaDesarrollo += e.getNotaDesarrollo();
+            sumaMatematica += e.getNotaMatematica();
+            contador++;
         }
         
-        // Prepara el arreglo para guardar los promedios
         double[] promedios = new double[2];
-        
-        // Calcula los promedios (solo si hay estudiantes)
         if (contador > 0) {
-            promedios[0] = sumaDesarrollo / contador; // Promedio de Desarrollo
-            promedios[1] = sumaMatematica / contador; // Promedio de Matemática
+            promedios[0] = sumaDesarrollo / contador;
+            promedios[1] = sumaMatematica / contador;
         } else {
-            promedios[0] = 0;  // Si no hay estudiantes, promedio cero
+            promedios[0] = 0;
             promedios[1] = 0;
         }
         
-        // ===== PARTE 2: DECISIONES =====
-        // Compara los promedios y muestra un mensaje según el resultado
         if (promedios[0] < promedios[1]) {
-            // Caso 1: Matemática tiene mejor promedio
             System.out.println("** Los estudiantes tienen mejor promedio en Matemática **");
         } else if (promedios[0] > promedios[1]) {
-            // Caso 2: Desarrollo tiene mejor promedio
             System.out.println("** Los estudiantes tienen mejor promedio en Desarrollo **");
         } else {
-            // Caso 3: Los promedios son iguales
             System.out.println("** Los promedios son iguales **");
         }
         
-        return promedios;  // Devuelve los promedios calculados
+        return promedios;
+    }
+    
+    // ============= MÉTODOS POLIMÓRFICOS NUEVOS =============
+    
+    /**
+     * MÉTODO POLIMÓRFICO: Procesa estudiantes con diferentes operaciones
+     * @param tipoOperacion 1=Nota Máxima, 2=Nota Mínima, 3=Diferencia
+     */
+    public void procesarConPolimorfismo(int tipoOperacion) {
+        if (estudiantes.isEmpty()) {
+            System.out.println("No hay estudiantes registrados.");
+            return;
+        }
+        
+        String nombreOperacion = "";
+        switch(tipoOperacion) {
+            case 1: nombreOperacion = "Nota Máxima"; break;
+            case 2: nombreOperacion = "Nota Mínima"; break;
+            case 3: nombreOperacion = "Diferencia de Notas"; break;
+        }
+        
+        System.out.println("\n=== PROCESAMIENTO POLIMÓRFICO ===");
+        System.out.println("Operación: " + nombreOperacion);
+        System.out.println("=================================");
+        
+        double suma = 0;
+        double maximo = Double.MIN_VALUE;
+        double minimo = Double.MAX_VALUE;
+        Estudiante estudianteMax = null;
+        Estudiante estudianteMin = null;
+        
+        for (Estudiante e : estudiantes) {
+            // POLIMORFISMO: el mismo método se comporta diferente según el parámetro
+            double resultado = e.calcularOperacionPolimorfica(tipoOperacion);
+            suma += resultado;
+            
+            System.out.printf("Código: %d | %-15s | Resultado: %.2f%n", 
+                            e.getCodigo(), e.getNombre(), resultado);
+            
+            if (resultado > maximo) {
+                maximo = resultado;
+                estudianteMax = e;
+            }
+            if (resultado < minimo) {
+                minimo = resultado;
+                estudianteMin = e;
+            }
+        }
+        
+        double promedio = suma / estudiantes.size();
+        
+        System.out.println("=================================");
+        System.out.printf("Suma total: %.2f%n", suma);
+        System.out.printf("Promedio: %.2f%n", promedio);
+        System.out.printf("Máximo: %.2f (%s)%n", maximo, estudianteMax.getNombre());
+        System.out.printf("Mínimo: %.2f (%s)%n", minimo, estudianteMin.getNombre());
+        System.out.println("=================================");
+    }
+    
+    /**
+     * MÉTODO POLIMÓRFICO: Muestra diferentes formas de calcular la definitiva
+     */
+    public void mostrarDiferentesFormasCalculo() {
+        if (estudiantes.isEmpty()) {
+            System.out.println("No hay estudiantes registrados.");
+            return;
+        }
+        
+        System.out.println("\n=== DIFERENTES FORMAS DE CÁLCULO (POLIMORFISMO POR SOBRECARGA) ===");
+        System.out.println("=================================================================");
+        
+        for (Estudiante e : estudiantes) {
+            System.out.println("\nEstudiante: " + e.getNombre());
+            System.out.println("  Nota Desarrollo: " + e.getNotaDesarrollo());
+            System.out.println("  Nota Matemática: " + e.getNotaMatematica());
+            
+            // POLIMORFISMO: el mismo método nombre con diferentes parámetros
+            System.out.println("  Definitiva estándar (55% - 45%): " + String.format("%.2f", e.calcularDefinitiva()));
+            System.out.println("  Definitiva con ponderación 70%-30%: " + String.format("%.2f", e.calcularDefinitiva(0.70, 0.30)));
+            System.out.println("  Definitiva con ponderación 30%-70%: " + String.format("%.2f", e.calcularDefinitiva(0.30, 0.70)));
+            System.out.println("  Definitiva como promedio simple: " + String.format("%.2f", e.calcularDefinitiva(true)));
+        }
+        System.out.println("=================================================================");
     }
 }
