@@ -8,6 +8,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>25</maven.compiler.release>
-        <exec.mainClass>com.mycompany.parcial_corte_1.poliformismo.Parcial_Corte_1Poliformismo</exec.mainClass>
+        <exec.mainClass>principal.Main</exec.mainClass>
     </properties>
 </project>
