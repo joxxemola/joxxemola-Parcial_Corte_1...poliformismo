@@ -1,136 +1,98 @@
 /**
  * @author Jose David Molano Perdomo
+ *
+ * POLIMORFISMO — Clase que USA el array Asignatura[]
+ *
+ * El punto clave: los atributos notaDesarrollo y notaMatematica
+ * desaparecen. En su lugar hay un array de tipo PADRE: Asignatura[].
+ *
+ * Cuando el código recorre ese array y llama a un método (calcularPonderacion,
+ * getDescripcion, esIncrementable...), Java decide EN TIEMPO DE EJECUCIÓN
+ * cuál implementación usar según el objeto real guardado en cada posición.
+ * Eso es el "dispatch dinámico" o polimorfismo de subtipo.
  */
-
-package modelo;  // Pertenece a la capa Modelo (datos)
+package modelo;
 
 public class Estudiante {
-    
+
     // ============= ATRIBUTOS =============
-    private int codigo;              // Código único del estudiante (mayor a 21000)
-    private String nombre;           // Nombre completo del estudiante
-    private double notaDesarrollo;   // Nota de la asignatura Desarrollo (0.0 a 5.0)
-    private double notaMatematica;   // Nota de la asignatura Matemática (0.0 a 5.0)
-    
-    // ============= CONSTRUCTOR =============
+    private int codigo;
+    private String nombre;
+
     /**
-     * Constructor - Crea un nuevo estudiante con todos sus datos
-     * @param codigo            Código único (debe ser > 21000)
-     * @param nombre            Nombre del estudiante
-     * @param notaDesarrollo    Nota de Desarrollo (0.0 - 5.0)
-     * @param notaMatematica    Nota de Matemática (0.0 - 5.0)
+     * ARRAY POLIMÓRFICO: el tipo declarado es Asignatura (padre),
+     * pero los objetos reales son AsignaturaDesarrollo y AsignaturaMatematica.
+     * índice 0 → Desarrollo, índice 1 → Matemática
      */
+    private Asignatura[] asignaturas;
+
+    // ============= CONSTRUCTOR =============
     public Estudiante(int codigo, String nombre, double notaDesarrollo, double notaMatematica) {
-        this.codigo = codigo;                 // Guarda el código
-        this.nombre = nombre;                 // Guarda el nombre
-        this.notaDesarrollo = notaDesarrollo; // Guarda nota de Desarrollo
-        this.notaMatematica = notaMatematica; // Guarda nota de Matemática
+        this.codigo = codigo;
+        this.nombre = nombre;
+
+        // Crea los objetos concretos y los guarda como tipo padre
+        this.asignaturas = new Asignatura[] {
+            new AsignaturaDesarrollo(notaDesarrollo),   // posición 0
+            new AsignaturaMatematica(notaMatematica)    // posición 1
+        };
     }
-    
-    // ============= MÉTODOS DE CÁLCULO =============
-    
+
+    // ============= MÉTODOS DE CÁLCULO (ahora POLIMÓRFICOS) =============
+
     /**
-     * Calcula la nota definitiva del estudiante
-     * Fórmula: (Desarrollo * 55%) + (Matemática * 45%)
-     * @return La nota definitiva (entre 0.0 y 5.0)
+     * POLIMORFISMO EN ACCIÓN:
+     * El bucle no sabe si cada elemento es Desarrollo o Matemática.
+     * Simplemente llama a calcularPonderacion() y Java hace lo correcto.
+     * Si mañana agrego una tercera asignatura, este método NO CAMBIA.
      */
     public double calcularDefinitiva() {
-        // Aplica los porcentajes: 55% para Desarrollo, 45% para Matemática
-        return (notaDesarrollo * 0.55) + (notaMatematica * 0.45);
+        double total = 0;
+        for (Asignatura a : asignaturas) {
+            total += a.calcularPonderacion();  // ← llamada polimórfica
+        }
+        return total;
     }
-    
+
     /**
-     * Verifica si el estudiante aprueba o no según su nota definitiva
-     * @return "SI APRUEBA" si definitiva >= 3.5, "NO APRUEBA" si es menor
+     * POLIMORFISMO EN ACCIÓN:
+     * Recorre el array e intenta incrementar cada asignatura.
+     * Solo AsignaturaDesarrollo responderá (esIncrementable() = true).
+     * AsignaturaMatematica ignorará el incremento (esIncrementable() = false).
+     * El controlador NO necesita saber cuál es cuál.
+     */
+    public void incrementarNotasIncrementables(double incremento) {
+        for (Asignatura a : asignaturas) {
+            a.incrementarNota(incremento);  // ← polimórfico: cada subclase decide
+        }
+    }
+
+    /**
+     * Devuelve aprobación según la nota definitiva.
      */
     public String verificarAprobacion() {
-        double definitiva = calcularDefinitiva();  // Calcula la nota definitiva
-        
-        // Toma una decisión basada en la nota
-        if (definitiva < 3.5) {
-            return "NO APRUEBA";  // Menor a 3.5 = No aprueba
-        } else {
-            return "SI APRUEBA";  // Mayor o igual a 3.5 = Sí aprueba
-        }
+        return (calcularDefinitiva() >= 3.5) ? "SI APRUEBA" : "NO APRUEBA";
     }
-    
-    // ============= MÉTODOS PARA INCREMENTAR NOTAS =============
-    
+
+    // ============= GETTERS DE NOTAS (delegan en el array) =============
+
+    public double getNotaDesarrollo() { return asignaturas[0].getNota(); }
+    public double getNotaMatematica() { return asignaturas[1].getNota(); }
+
     /**
-     * Incrementa la nota de Desarrollo con control de límite
-     * @param incremento Cantidad a aumentar (debe ser entre 0.0 y 0.5)
-     * Nota: Si la suma pasa de 5.0, la nota se deja en 5.0 (máximo permitido)
+     * Expone el array completo para que el controlador/vista puedan
+     * recorrerlo sin conocer los tipos concretos.
+     * Útil para mostrar dinámica mente las asignaturas disponibles.
      */
-    public void incrementarNotaDesarrollo(double incremento) {
-        double nuevaNota = this.notaDesarrollo + incremento;  // Suma el incremento
-        
-        // Verifica si se pasa del límite máximo (5.0)
-        if (nuevaNota > 5.0) {
-            this.notaDesarrollo = 5.0;  // Si pasa, deja en 5.0
-        } else {
-            this.notaDesarrollo = nuevaNota;  // Si no pasa, asigna la nueva nota
-        }
-    }
-    
+    public Asignatura[] getAsignaturas() { return asignaturas; }
+
     // ============= MÉTODOS PARA MODIFICAR NOTAS =============
-    
-    /**
-     * Modifica la nota de Desarrollo con validación de rango
-     * @param nuevaNota Nuevo valor para la nota (debe estar entre 0.0 y 5.0)
-     * Si la nota no es válida, no se realiza el cambio
-     */
-    public void modificarNotaDesarrollo(double nuevaNota) {
-        // Solo modifica si la nota está en el rango válido
-        if (nuevaNota >= 0.0 && nuevaNota <= 5.0) {
-            this.notaDesarrollo = nuevaNota;  // Actualiza la nota
-        }
-        // Si no es válida, simplemente ignora el cambio
-    }
-    
-    /**
-     * Modifica la nota de Matemática con validación de rango
-     * @param nuevaNota Nuevo valor para la nota (debe estar entre 0.0 y 5.0)
-     * Si la nota no es válida, no se realiza el cambio
-     */
-    public void modificarNotaMatematica(double nuevaNota) {
-        // Solo modifica si la nota está en el rango válido
-        if (nuevaNota >= 0.0 && nuevaNota <= 5.0) {
-            this.notaMatematica = nuevaNota;  // Actualiza la nota
-        }
-        // Si no es válida, simplemente ignora el cambio
-    }
-    
-    // ============= GETTERS (MÉTODOS DE ACCESO) =============
-    
-    /**
-     * Obtiene el código del estudiante
-     * @return El código único del estudiante
-     */
-    public int getCodigo() {
-        return codigo;
-    }
-    
-    /**
-     * Obtiene el nombre del estudiante
-     * @return El nombre completo
-     */
-    public String getNombre() {
-        return nombre;
-    }
-    
-    /**
-     * Obtiene la nota de Desarrollo
-     * @return La nota de Desarrollo actual
-     */
-    public double getNotaDesarrollo() {
-        return notaDesarrollo;
-    }
-    
-    /**
-     * Obtiene la nota de Matemática
-     * @return La nota de Matemática actual
-     */
-    public double getNotaMatematica() {
-        return notaMatematica;
-    }
+
+    public void modificarNotaDesarrollo(double nuevaNota) { asignaturas[0].setNota(nuevaNota); }
+    public void modificarNotaMatematica(double nuevaNota) { asignaturas[1].setNota(nuevaNota); }
+
+    // ============= GETTERS BÁSICOS =============
+
+    public int    getCodigo() { return codigo; }
+    public String getNombre() { return nombre; }
 }
